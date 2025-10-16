@@ -1,0 +1,19 @@
+{
+  "name": "CrowdStrike Falcon",
+  "type": "EDR",
+  "threats": [
+    {
+      "id": "CS-2024-001",
+      "name": "Malware Beaconing",
+      "severity": "high",
+      "source": "CrowdStrike",
+      "target": "Multiple endpoints",
+      "status": "Active",
+      "detection": "2024-01-15T10:30:00Z",
+      "confidence": 95,
+      "description": "Endpoint detected beaconing to C2 server"
+    }
+  ],
+  "status": "online",
+  "lastSync": "2024-01-15T10:30:00Z"
+}

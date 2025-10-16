@@ -1,0 +1,19 @@
+{
+  "name": "AlienVault OTX",
+  "type": "Threat Intelligence",
+  "threats": [
+    {
+      "id": "AV-2024-001",
+      "name": "Suspicious IP Activity",
+      "severity": "medium",
+      "source": "AlienVault OTX",
+      "target": "Firewall",
+      "status": "Monitored",
+      "detection": "2024-01-15T10:25:00Z",
+      "confidence": 82,
+      "description": "Multiple connections from suspicious IP range"
+    }
+  ],
+  "status": "online",
+  "lastSync": "2024-01-15T10:25:00Z"
+}

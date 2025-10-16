@@ -1,0 +1,46 @@
+{
+  "threatIntelligence": {
+    "sources": ["CrowdStrike", "AlienVault OTX", "VirusTotal", "Shodan", "MISP"],
+    "feeds": [
+      {
+        "source": "CrowdStrike",
+        "type": "malware",
+        "count": 23,
+        "lastUpdate": "2024-01-15T10:30:00Z",
+        "highPriority": 5
+      },
+      {
+        "source": "AlienVault OTX",
+        "type": "ips",
+        "count": 147,
+        "lastUpdate": "2024-01-15T10:25:00Z",
+        "highPriority": 12
+      },
+      {
+        "source": "VirusTotal",
+        "type": "file_hashes",
+        "count": 89,
+        "lastUpdate": "2024-01-15T10:28:00Z",
+        "highPriority": 8
+      }
+    ]
+  },
+  "systemHealth": {
+    "servers": [
+      {"id": 1, "name": "Web Server 01", "status": "online", "cpu": 42, "memory": 68, "storage": 54},
+      {"id": 2, "name": "DB Server 02", "status": "online", "cpu": 28, "memory": 45, "storage": 72},
+      {"id": 3, "name": "App Server 03", "status": "warning", "cpu": 78, "memory": 82, "storage": 35},
+      {"id": 4, "name": "File Server 04", "status": "online", "cpu": 15, "memory": 34, "storage": 89}
+    ],
+    "network": {
+      "latency": 24,
+      "packetLoss": 0.2,
+      "bandwidthUsage": 68
+    }
+  },
+  "compliance": {
+    "iso27001": {"score": 82, "controls": 114, "status": "Active"},
+    "nist": {"score": 78, "functions": 23, "status": "In Progress"},
+    "gdpr": {"score": 91, "status": "Compliant"}
+  }
+}

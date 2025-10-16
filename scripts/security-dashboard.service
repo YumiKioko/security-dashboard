@@ -1,0 +1,14 @@
+[Unit]
+Description=Security Dashboard API Server
+After=network.target
+
+[Service]
+Type=simple
+User=user
+WorkingDirectory=/home/user/security-dashboard
+ExecStart=/usr/bin/node server.js
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
