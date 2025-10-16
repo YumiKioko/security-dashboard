@@ -1,0 +1,24 @@
+[
+  {
+    "id": "INC-20240115001",
+    "title": "Unauthorized Access Attempt",
+    "description": "Multiple failed login attempts from unknown IP address",
+    "priority": "high",
+    "status": "open",
+    "assigned": "Security Team",
+    "timestamp": "2024-01-15T10:30:00Z",
+    "resolution": "",
+    "evidence": ["log files", "network traces"]
+  },
+  {
+    "id": "INC-20240115002",
+    "title": "Phishing Email Reported",
+    "description": "Employee reported suspicious email with attachment",
+    "priority": "medium",
+    "status": "investigating",
+    "assigned": "Sarah Chen",
+    "timestamp": "2024-01-15T09:15:00Z",
+    "resolution": "",
+    "evidence": ["email headers", "attachment analysis"]
+  }
+]

@@ -4,17 +4,54 @@ const path = require('path');
 const fs = require('fs');
 const WebSocket = require('ws');
 const http = require('http');
+const SecurityLogger = require('./logger');
+const config = require('./config');
 
 const app = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
+const logger = new SecurityLogger(config.logLevel);
 
+// Middleware
 app.use(cors());
 app.use(express.json());
 app.use(express.static(__dirname));
 
-// Enhanced data with all sections
-function getSecurityData() {
+// Request logging middleware
+app.use((req, res, next) => {
+    logger.info(`${req.method} ${req.url}`, {
+        ip: req.ip,
+        userAgent: req.get('User-Agent')
+    });
+    next();
+});
+
+// Data storage functions
+function loadData(file) {
+    try {
+        const data = fs.readFileSync(path.join(__dirname, 'data', file), 'utf8');
+        return JSON.parse(data);
+    } catch (error) {
+        logger.error(`Failed to load data from ${file}`, { error: error.message });
+        return null;
+    }
+}
+
+function saveData(file, data) {
+    try {
+        fs.writeFileSync(path.join(__dirname, 'data', file), JSON.stringify(data, null, 2));
+        return true;
+    } catch (error) {
+        logger.error(`Failed to save data to ${file}`, { error: error.message });
+        return false;
+    }
+}
+
+// Enhanced data generation
+function generateSecurityData() {
+    const incidents = loadData('incidents.json') || [];
+    const compliance = loadData('compliance.json') || { frameworks: {} };
+    
     return {
         timestamp: new Date().toISOString(),
         threats: [
@@ -26,75 +63,35 @@ function getSecurityData() {
                 target: 'Multiple endpoints',
                 status: 'Active',
                 detection: new Date().toISOString(),
-                confidence: 95
+                confidence: 95,
+                ioc: ['C2 communication', 'suspicious process']
             },
             {
                 id: 'AV-' + Date.now(),
                 name: 'Suspicious IP Activity',
                 severity: 'medium',
-                source: 'AlienVault',
+                source: 'AlienVault OTX',
                 target: 'Firewall',
                 status: 'Monitored',
                 detection: new Date().toISOString(),
-                confidence: 82
-            },
-            {
-                id: 'VT-' + Date.now(),
-                name: 'New Malware Hash',
-                severity: 'low',
-                source: 'VirusTotal',
-                target: 'File Server',
-                status: 'Blocked',
-                detection: new Date().toISOString(),
-                confidence: 88
+                confidence: 82,
+                ioc: ['port scanning', 'brute force attempts']
             }
         ],
-        incidents: [
-            {
-                id: 'INC-' + Date.now(),
-                title: 'Unauthorized Access Attempt',
-                description: 'Multiple failed login attempts from unknown IP',
-                priority: 'high',
-                status: 'open',
-                timestamp: new Date().toISOString(),
-                assigned: 'Security Team'
-            },
-            {
-                id: 'INC-' + (Date.now() + 1),
-                title: 'Phishing Email Detected',
-                description: 'Employee reported suspicious email with attachment',
-                priority: 'medium',
-                status: 'investigating',
-                timestamp: new Date().toISOString(),
-                assigned: 'Sarah Chen'
-            },
-            {
-                id: 'INC-' + (Date.now() + 2),
-                title: 'Compliance Documentation Update',
-                description: 'Quarterly compliance documentation needs review',
-                priority: 'low',
-                status: 'open',
-                timestamp: new Date().toISOString(),
-                assigned: 'Elena Rodriguez'
-            }
-        ],
-        compliance: {
-            iso27001: { score: 82, controls: 114, status: 'Active' },
-            nist: { score: 78, functions: 23, status: 'In Progress' },
-            gdpr: { score: 91, status: 'Compliant' }
-        },
+        incidents: incidents,
+        compliance: compliance.frameworks,
         infrastructure: {
             servers: [
-                { id: 1, name: 'Web Server 01', status: 'online', cpu: 42, memory: 68, storage: 54, location: 'DC-A' },
-                { id: 2, name: 'DB Server 02', status: 'online', cpu: 28, memory: 45, storage: 72, location: 'DC-B' },
-                { id: 3, name: 'App Server 03', status: 'warning', cpu: 78, memory: 82, storage: 35, location: 'DC-A' },
-                { id: 4, name: 'File Server 04', status: 'offline', cpu: 0, memory: 0, storage: 89, location: 'DC-C' }
+                { id: 1, name: 'Web Server 01', status: 'online', cpu: 42, memory: 68, storage: 54, location: 'DC-A', services: ['nginx', 'nodejs'] },
+                { id: 2, name: 'DB Server 02', status: 'online', cpu: 28, memory: 45, storage: 72, location: 'DC-B', services: ['postgresql', 'redis'] },
+                { id: 3, name: 'App Server 03', status: 'warning', cpu: 78, memory: 82, storage: 35, location: 'DC-A', services: ['java', 'tomcat'] }
             ],
             network: {
                 latency: 24,
                 packetLoss: 0.2,
                 bandwidthUsage: 68,
-                status: 'healthy'
+                status: 'healthy',
+                threatsBlocked: 1247
             }
         },
         securityOps: {
@@ -109,16 +106,8 @@ function getSecurityData() {
                     source: 'External',
                     target: 'Workstation DEV-045',
                     status: 'Active',
-                    detection: '10 minutes ago'
-                },
-                {
-                    id: 2,
-                    name: 'Phishing Campaign',
-                    severity: 'medium',
-                    source: 'Email',
-                    target: 'Multiple Users',
-                    status: 'Monitored',
-                    detection: '2 hours ago'
+                    detection: '10 minutes ago',
+                    action: 'quarantined'
                 }
             ]
         },
@@ -126,82 +115,155 @@ function getSecurityData() {
             generated: 15,
             scheduled: 3,
             recent: [
-                { id: 'RPT-001', name: 'Weekly Security Overview', date: '2024-01-15', status: 'completed' },
-                { id: 'RPT-002', name: 'Compliance Audit', date: '2024-01-14', status: 'completed' },
-                { id: 'RPT-003', name: 'Incident Summary', date: '2024-01-13', status: 'pending' }
+                { id: 'RPT-001', name: 'Weekly Security Overview', date: '2024-01-15', status: 'completed', type: 'security', size: '2.4 MB' },
+                { id: 'RPT-002', name: 'Compliance Audit Report', date: '2024-01-14', status: 'completed', type: 'compliance', size: '1.8 MB' }
             ]
+        },
+        metrics: {
+            mttd: '45m',  // Mean Time to Detect
+            mttr: '2.5h', // Mean Time to Respond
+            sla: '99.9%',
+            uptime: '99.99%'
         }
     };
 }
 
-// API endpoints
+// API Endpoints
+
+// Health check with detailed status
 app.get('/api/health', (req, res) => {
-    res.json({ 
-        status: 'healthy', 
+    const health = {
+        status: 'healthy',
         timestamp: new Date().toISOString(),
-        message: 'Security Dashboard API is running'
-    });
+        version: '1.0.0',
+        environment: process.env.NODE_ENV || 'development',
+        uptime: process.uptime(),
+        memory: process.memoryUsage(),
+        endpoints: [
+            '/api/security-data',
+            '/api/incidents',
+            '/api/compliance',
+            '/api/infrastructure',
+            '/api/security-ops',
+            '/api/reports'
+        ]
+    };
+    res.json(health);
 });
 
+// Complete security data
 app.get('/api/security-data', (req, res) => {
-    res.json(getSecurityData());
+    logger.info('Security data requested');
+    res.json(generateSecurityData());
+});
+
+// Individual endpoints
+app.get('/api/incidents', (req, res) => {
+    const data = generateSecurityData();
+    res.json(data.incidents);
+});
+
+app.get('/api/compliance', (req, res) => {
+    const data = generateSecurityData();
+    res.json(data.compliance);
 });
 
 app.get('/api/infrastructure', (req, res) => {
-    const data = getSecurityData();
+    const data = generateSecurityData();
     res.json(data.infrastructure);
 });
 
 app.get('/api/security-ops', (req, res) => {
-    const data = getSecurityData();
+    const data = generateSecurityData();
     res.json(data.securityOps);
 });
 
 app.get('/api/reports', (req, res) => {
-    const data = getSecurityData();
+    const data = generateSecurityData();
     res.json(data.reports);
+});
+
+// Incident management endpoints
+app.post('/api/incidents', (req, res) => {
+    const newIncident = {
+        id: 'INC-' + Date.now(),
+        timestamp: new Date().toISOString(),
+        status: 'open',
+        ...req.body
+    };
+    
+    logger.securityEvent('INCIDENT_CREATED', newIncident);
+    res.json(newIncident);
 });
 
 // WebSocket for real-time updates
 wss.on('connection', (ws) => {
-    console.log('New WebSocket connection');
+    logger.info('WebSocket connection established');
     
     ws.send(JSON.stringify({
         type: 'CONNECTION_ESTABLISHED',
-        message: 'Connected to security data feed'
+        message: 'Connected to security data feed',
+        timestamp: new Date().toISOString()
     }));
 
+    // Send periodic updates
     const interval = setInterval(() => {
         const update = {
             type: 'DATA_UPDATE',
             timestamp: new Date().toISOString(),
-            data: getSecurityData()
+            data: generateSecurityData()
         };
         ws.send(JSON.stringify(update));
-    }, 30000);
+    }, config.dataRefreshInterval);
 
     ws.on('close', () => {
-        console.log('WebSocket connection closed');
+        logger.info('WebSocket connection closed');
         clearInterval(interval);
+    });
+
+    ws.on('error', (error) => {
+        logger.error('WebSocket error', { error: error.message });
     });
 });
 
-// Serve index.html for root route
+// Serve dashboard
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
+// Error handling
+app.use((err, req, res, next) => {
+    logger.error('Server error', { error: err.message, stack: err.stack });
+    res.status(500).json({ error: 'Internal server error' });
+});
+
+// 404 handler
+app.use((req, res) => {
+    logger.warn('404 Not Found', { url: req.url });
+    res.status(404).json({ error: 'Endpoint not found' });
+});
+
 // Start server
-const PORT = 3000;
-server.listen(PORT, '0.0.0.0', () => {
-    console.log('🚀 ENHANCED SECURITY DASHBOARD SERVER STARTED');
-    console.log('📊 Dashboard: http://localhost:' + PORT);
-    console.log('🔧 API Health: http://localhost:' + PORT + '/api/health');
-    console.log('📡 WebSocket: ws://localhost:8080');
-    console.log('');
-    console.log('📋 Available endpoints:');
-    console.log('   GET /api/security-data  - Complete security data');
-    console.log('   GET /api/infrastructure - Infrastructure data');
-    console.log('   GET /api/security-ops   - Security operations data');
-    console.log('   GET /api/reports        - Reports data');
+server.listen(config.port, '0.0.0.0', () => {
+    logger.info(`🚀 ENHANCED SECURITY DASHBOARD STARTED`, {
+        port: config.port,
+        environment: process.env.NODE_ENV || 'development',
+        features: config.features
+    });
+    
+    console.log('\n📊 SECURITY DASHBOARD STATUS:');
+    console.log(`   Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`   Dashboard: http://localhost:${config.port}`);
+    console.log(`   API Health: http://localhost:${config.port}/api/health`);
+    console.log(`   WebSocket: ws://localhost:${config.wsPort}`);
+    console.log(`   Log Level: ${config.logLevel}`);
+    console.log('\n🔧 Available Endpoints:');
+    console.log('   GET  /api/health          - System health check');
+    console.log('   GET  /api/security-data   - Complete security data');
+    console.log('   GET  /api/incidents       - Incident data');
+    console.log('   GET  /api/compliance      - Compliance data');
+    console.log('   POST /api/incidents       - Create new incident');
+    console.log('   GET  /api/infrastructure  - Infrastructure data');
+    console.log('   GET  /api/security-ops    - Security operations');
+    console.log('   GET  /api/reports         - Reports data');
 });

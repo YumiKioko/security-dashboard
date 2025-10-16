@@ -1,0 +1,28 @@
+{
+  "frameworks": {
+    "iso27001": {
+      "name": "ISO/IEC 27001:2022",
+      "score": 82,
+      "status": "Active",
+      "lastAudit": "2024-01-10",
+      "nextAudit": "2024-07-10",
+      "controls": {
+        "implemented": 114,
+        "total": 114,
+        "percentage": 100
+      }
+    },
+    "nist": {
+      "name": "NIST Cybersecurity Framework",
+      "score": 78,
+      "status": "In Progress",
+      "lastAudit": "2024-01-08",
+      "nextAudit": "2024-04-08",
+      "functions": {
+        "implemented": 23,
+        "total": 23,
+        "percentage": 100
+      }
+    }
+  }
+}
