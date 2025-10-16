@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  security-dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    ports:
+      - "3000:3000"
+      - "8080:8080"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - WS_PORT=8080
+      - DATA_DIR=/app/data
+      - LOG_DIR=/app/logs
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - ./sources:/app/sources
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    
+  # Reverse proxy for production
+  nginx-proxy:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - security-dashboard
+    restart: unless-stopped

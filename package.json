@@ -10,12 +10,18 @@
     "backup": "./backup-with-git.sh",
     "deploy": "echo 'Deployment script would run here'"
   },
-  "keywords": ["security", "dashboard", "monitoring", "enterprise"],
+  "keywords": [
+    "security",
+    "dashboard",
+    "monitoring",
+    "enterprise"
+  ],
   "author": "Security Team",
   "license": "MIT",
   "dependencies": {
-    "express": "^4.18.2",
     "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "pm2": "^6.0.13",
     "ws": "^8.13.0"
   },
   "devDependencies": {

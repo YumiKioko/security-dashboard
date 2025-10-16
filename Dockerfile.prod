@@ -1,0 +1,36 @@
+FROM node:18-alpine
+
+# Install security updates and curl for healthchecks
+RUN apk update && apk upgrade && apk add --no-cache curl
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install production dependencies only
+RUN npm ci --only=production --no-optional && \
+    npm cache clean --force
+
+# Copy application files
+COPY . .
+
+# Create necessary directories
+RUN mkdir -p data logs
+
+# Create non-root user for security
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S security -u 1001 && \
+    chown -R security:nodejs /app
+
+USER security
+
+# Expose ports
+EXPOSE 3000 8080
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:3000/api/health || exit 1
+
+# Start command using server-complete.js (as per backup instructions)
+CMD ["node", "server-complete.js"]

@@ -1,0 +1,18 @@
+Security Dashboard Backup
+=========================
+Backup Date: Thu Oct 16 13:22:51 UTC 2025
+Backup Name: security-dashboard-backup_20251016_132251
+Original Location: ~/security-dashboard
+Files Included:
+- HTML Dashboard files
+- JavaScript server files
+- Configuration files
+- Data sources
+- Package configuration
+
+To restore:
+1. Copy files back to ~/security-dashboard
+2. Run: cd ~/security-dashboard && npm install
+3. Start: node server-complete.js
+
+Backup completed successfully!
